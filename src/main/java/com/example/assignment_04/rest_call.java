@@ -7,7 +7,7 @@ package com.example.assignment_04;
 
 /**
  *
- * @author payal
+ * @author shiv
  */
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,9 +21,11 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
 import org.apache.derby.client.am.SqlException;
+
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.NestedExceptionUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -69,8 +71,8 @@ public class rest_call {
         catch(DataIntegrityViolationException e){
             System.out.println("Exceptionn sssss-----------"+e.getLocalizedMessage());
             System.out.println("Exceptionn sssss-----------"+e.getMessage());
-            
-            if(e.getRootCause().toString().contains("FK98G3MKYW32P9U8AAIFL1KF94Y")){
+            System.out.println("e.getRootCause()"+e.getRootCause());
+            if(e.getRootCause().toString().contains("fk98g3mkyw32p9u8aaifl1kf94y")){
                 //Foreign key constraint
                 System.out.println("Root cause -----------"+e.getRootCause());
                 return "User_id doesn't exist";
@@ -115,6 +117,7 @@ public class rest_call {
     }
     @ExceptionHandler(ConstraintViolationException.class)
     String handle2ConstraintViolationException(ConstraintViolationException e) {
+        System.out.println("handle2ConstraintViolationException");
         Set<ConstraintViolation<?>> v = e.getConstraintViolations();
         JSONObject er=new JSONObject();
         for (ConstraintViolation<?> v1 : v) {
@@ -127,13 +130,27 @@ public class rest_call {
      @ExceptionHandler(SqlException.class)
     String handle2SqlException(SqlException e) {
         String ex = e.getLocalizedMessage();
+        System.out.println("error"+e.getErrorCode());
         if(e.getErrorCode()==20000){
             return "username must be unique";
         }
         else{
-            return "Exception found";
+            return "";
         }
+        
     
   }
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public String conflict(DataIntegrityViolationException e) {
+
+        if(e.getMessage().contains("uk_ejtwyvvjnreec627nsksg590m")){
+            return "Username must be unique";
+        }
+        else{
+            return"";
+        }
+            
+        
+    }
     
 }
